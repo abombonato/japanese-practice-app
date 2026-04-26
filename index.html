@@ -4,11 +4,6 @@
   <title>My Japanese Practice App hihihi</title>
 
   <style>
-    .pikachu-img {
-  width: 200px;
-  height: auto;
-  animation: shake 0.5s infinite alternate;
-}
     body {
       font-family: Arial;
       text-align: center;
@@ -18,7 +13,7 @@
 
     h1 { color: #2f6f62; }
 
-    /* 🌸 Decorations */
+    /* 🌸 Background decorations */
     .decor {
       position: fixed;
       opacity: 0.25;
@@ -92,7 +87,7 @@
       z-index: 3;
     }
 
-    /* 😂 Contact screen */
+    /* 📱 Contact screen */
     #contactScreen {
       position: fixed;
       top: 0;
@@ -111,14 +106,16 @@
       font-family: Arial;
     }
 
-    .emoji {
-      font-size: 60px;
+    /* 🐭 Pikachu image animation */
+    .pikachu-img {
+      width: 220px;
+      height: auto;
       animation: shake 0.5s infinite alternate;
     }
 
     @keyframes shake {
-      from { transform: rotate(-10deg); }
-      to { transform: rotate(10deg); }
+      from { transform: rotate(-8deg); }
+      to { transform: rotate(8deg); }
     }
   </style>
 </head>
@@ -179,10 +176,15 @@
 <!-- CONTACT SCREEN -->
 <div id="contactScreen" class="hidden">
   <div class="contactContent">
+
+    <!-- 🐭 REAL IMAGE -->
     <img src="pikachu.png" class="pikachu-img" />
+
+    <h2>pikachu is laughing</h2>
     <p>volte quando quiser estudar 🇯🇵</p>
 
     <button onclick="closeContact()">Voltar</button>
+
   </div>
 </div>
 
@@ -209,4 +211,184 @@ function closeContact() {
   document.getElementById("contactScreen").classList.add("hidden");
 }
 
-/* ---------- DI
+/* ---------- DIFFICULTY ---------- */
+
+function setDifficulty(level) {
+  difficulty = level;
+
+  document.getElementById("difficultyLabel").innerText =
+    "Current: " + level.charAt(0).toUpperCase() + level.slice(1);
+}
+
+/* ---------- SCORE ---------- */
+
+function updateScore(isCorrect) {
+  total++;
+  if (isCorrect) correct++;
+
+  localStorage.setItem("total", total);
+  localStorage.setItem("correct", correct);
+
+  renderScore();
+}
+
+function renderScore() {
+  let percent = total === 0 ? 0 : Math.round((correct / total) * 100);
+
+  document.getElementById("score").innerText =
+    `Score: ${correct}/${total} (${percent}%)`;
+}
+
+renderScore();
+
+/* ---------- NUMBER SYSTEM ---------- */
+
+function convertNumber(num) {
+  const ones = ["", "ichi", "ni", "san", "yon", "go", "roku", "nana", "hachi", "kyuu"];
+  const tens = ["", "juu", "ni juu", "san juu", "yon juu", "go juu", "roku juu", "nana juu", "hachi juu", "kyuu juu"];
+  const hundreds = ["", "hyaku", "ni hyaku", "sanbyaku", "yon hyaku", "go hyaku", "roppyaku", "nana hyaku", "happyaku", "kyuu hyaku"];
+  const thousands = ["", "sen", "ni sen", "sanzen", "yon sen", "go sen", "roku sen", "nana sen", "hassen", "kyuu sen"];
+
+  let t = Math.floor(num / 1000);
+  let h = Math.floor((num % 1000) / 100);
+  let te = Math.floor((num % 100) / 10);
+  let o = num % 10;
+
+  return `${thousands[t]} ${hundreds[h]} ${tens[te]} ${ones[o]}`.trim();
+}
+
+function romajiToHiragana(text) {
+  const map = {
+    ichi:"いち", ni:"に", san:"さん", yon:"よん", go:"ご",
+    roku:"ろく", nana:"なな", hachi:"はち", kyuu:"きゅう",
+    juu:"じゅう", hyaku:"ひゃく", sen:"せん",
+    sanbyaku:"さんびゃく", roppyaku:"ろっぴゃく",
+    happyaku:"はっぴゃく", sanzen:"さんぜん", hassen:"はっせん"
+  };
+
+  return text.split(" ").map(w => map[w] || "").join("");
+}
+
+/* ---------- FLOW ---------- */
+
+function startExercise(mode) {
+  currentMode = mode;
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("exercise").classList.remove("hidden");
+  generate();
+}
+
+function goHome() {
+  document.getElementById("exercise").classList.add("hidden");
+  document.getElementById("home").classList.remove("hidden");
+}
+
+/* ---------- GENERATE ---------- */
+
+function generateNumber() {
+  if (difficulty === "easy") return Math.floor(Math.random() * 21);
+  if (difficulty === "medium") return Math.floor(Math.random() * 101);
+  return Math.floor(Math.random() * 1000);
+}
+
+function generate() {
+
+  currentNumber = generateNumber();
+
+  correctRomaji = convertNumber(currentNumber);
+  correctHiragana = romajiToHiragana(correctRomaji);
+
+  const q = document.getElementById("question");
+  const input = document.getElementById("inputArea");
+
+  document.getElementById("feedback").innerText = "";
+
+  if (currentMode === 1) {
+    q.innerText = `Write in romaji: ${currentNumber}`;
+    input.innerHTML = `<input id="answer"/><button onclick="checkText()">Check</button>`;
+  }
+
+  if (currentMode === 2) {
+    q.innerText = `Select hiragana: ${currentNumber}`;
+
+    let options = [correctHiragana];
+
+    while (options.length < 3) {
+      let fake = romajiToHiragana(convertNumber(generateNumber()));
+      if (!options.includes(fake)) options.push(fake);
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    input.innerHTML = options.map(opt =>
+      `<button onclick="checkMCQ('${opt}')">${opt}</button>`
+    ).join("");
+  }
+
+  if (currentMode === 3) {
+    q.innerText = `Write in romaji: ${correctHiragana}`;
+    input.innerHTML = `<input id="answer"/><button onclick="checkText()">Check</button>`;
+  }
+
+  if (currentMode === 4) {
+    q.innerText = `Say in Japanese: ${currentNumber}`;
+    input.innerHTML = `<button onclick="startSpeech()">🎤 Speak</button>`;
+  }
+}
+
+/* ---------- CHECK ---------- */
+
+function checkText() {
+  let user = document.getElementById("answer").value.trim();
+  let isCorrect = user === correctRomaji;
+
+  updateScore(isCorrect);
+
+  document.getElementById("feedback").innerText =
+    isCorrect ? "✅ Correct!" : `❌ ${correctRomaji}`;
+}
+
+function checkMCQ(choice) {
+  let isCorrect = choice === correctHiragana;
+
+  updateScore(isCorrect);
+
+  document.getElementById("feedback").innerText =
+    isCorrect ? "✅ Correct!" : `❌ ${correctHiragana}`;
+}
+
+/* ---------- SPEECH ---------- */
+
+function startSpeech() {
+  const recognition = new webkitSpeechRecognition();
+  recognition.lang = "ja-JP";
+
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    let spoken = event.results[0][0].transcript;
+
+    let isCorrect =
+      spoken.replace(/\s/g, "") === correctRomaji.replace(/\s/g, "");
+
+    updateScore(isCorrect);
+
+    document.getElementById("feedback").innerText =
+      isCorrect
+        ? `✅ Good! (${spoken})`
+        : `❌ Heard: ${spoken} | ${correctRomaji}`;
+  };
+}
+
+/* ---------- AUDIO ---------- */
+
+function playAudio() {
+  let utterance = new SpeechSynthesisUtterance(correctHiragana);
+  utterance.lang = "ja-JP";
+  speechSynthesis.speak(utterance);
+}
+
+</script>
+
+</body>
+</html>
