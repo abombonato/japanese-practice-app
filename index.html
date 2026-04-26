@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>My Japanese Practice App hihihi</title>
+
   <style>
     body {
       font-family: Arial;
@@ -14,7 +15,7 @@
 
     button {
       padding: 10px 15px;
-      margin: 10px;
+      margin: 6px;
       border: none;
       border-radius: 10px;
       background: #2f6f62;
@@ -25,7 +26,7 @@
     .card {
       background: white;
       padding: 20px;
-      margin: 20px auto;
+      margin: 15px auto;
       border-radius: 12px;
       max-width: 500px;
     }
@@ -33,11 +34,17 @@
     input {
       padding: 8px;
       width: 80%;
+      margin-top: 8px;
     }
 
     .hidden { display: none; }
 
     #score {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    #difficultyLabel {
       margin-top: 10px;
       font-weight: bold;
     }
@@ -50,15 +57,29 @@
 
 <div id="score">Score: 0/0 (0%)</div>
 
+<!-- HOME -->
 <div id="home">
+
+  <div class="card">
+    <h3>Difficulty</h3>
+    <button onclick="setDifficulty('easy')">Easy (0–20)</button>
+    <button onclick="setDifficulty('medium')">Medium (0–100)</button>
+    <button onclick="setDifficulty('hard')">Hard (0–999)</button>
+
+    <p id="difficultyLabel">Current: Easy</p>
+  </div>
+
   <button onclick="startExercise(1)">Numbers → Romaji</button>
   <button onclick="startExercise(2)">Numbers → Hiragana</button>
   <button onclick="startExercise(3)">Hiragana → Romaji</button>
   <button onclick="startExercise(4)">🎤 Speak Numbers</button>
+
 </div>
 
+<!-- EXERCISE -->
 <div id="exercise" class="hidden">
   <div class="card">
+
     <h2 id="question"></h2>
 
     <button onclick="playAudio()">🔊 Hear Pronunciation</button>
@@ -69,20 +90,54 @@
 
     <button onclick="generate()">Next</button>
     <button onclick="goHome()">Back</button>
+
   </div>
 </div>
 
 <script>
-let currentNumber = 0;
+
 let currentMode = 1;
+let currentNumber = 0;
+
 let correctRomaji = "";
 let correctHiragana = "";
 
-// tracking (load from storage)
-let total = localStorage.getItem("total") || 0;
-let correct = localStorage.getItem("correct") || 0;
+// tracking
+let total = Number(localStorage.getItem("total")) || 0;
+let correct = Number(localStorage.getItem("correct")) || 0;
 
-/* ---------- NUMBER LOGIC ---------- */
+// difficulty
+let difficulty = "easy";
+
+/* ---------- DIFFICULTY ---------- */
+
+function setDifficulty(level) {
+  difficulty = level;
+  document.getElementById("difficultyLabel").innerText =
+    "Current: " + level.charAt(0).toUpperCase() + level.slice(1);
+}
+
+/* ---------- SCORE ---------- */
+
+function updateScore(isCorrect) {
+  total++;
+  if (isCorrect) correct++;
+
+  localStorage.setItem("total", total);
+  localStorage.setItem("correct", correct);
+
+  renderScore();
+}
+
+function renderScore() {
+  let percent = total === 0 ? 0 : Math.round((correct / total) * 100);
+  document.getElementById("score").innerText =
+    `Score: ${correct}/${total} (${percent}%)`;
+}
+
+renderScore();
+
+/* ---------- NUMBER SYSTEM ---------- */
 
 function convertNumber(num) {
   const ones = ["", "ichi", "ni", "san", "yon", "go", "roku", "nana", "hachi", "kyuu"];
@@ -110,26 +165,6 @@ function romajiToHiragana(text) {
   return text.split(" ").map(w => map[w] || "").join("");
 }
 
-/* ---------- SCORE ---------- */
-
-function updateScore(isCorrect) {
-  total++;
-  if (isCorrect) correct++;
-
-  localStorage.setItem("total", total);
-  localStorage.setItem("correct", correct);
-
-  renderScore();
-}
-
-function renderScore() {
-  const percent = total == 0 ? 0 : Math.round((correct / total) * 100);
-  document.getElementById("score").innerText =
-    `Score: ${correct}/${total} (${percent}%)`;
-}
-
-renderScore();
-
 /* ---------- FLOW ---------- */
 
 function startExercise(mode) {
@@ -144,16 +179,33 @@ function goHome() {
   document.getElementById("home").classList.remove("hidden");
 }
 
+/* ---------- GENERATE NUMBER ---------- */
+
+function generateNumber() {
+
+  if (difficulty === "easy") {
+    return Math.floor(Math.random() * 21); // 0–20
+  }
+
+  if (difficulty === "medium") {
+    return Math.floor(Math.random() * 101); // 0–100
+  }
+
+  return Math.floor(Math.random() * 1000); // hard 0–999
+}
+
 /* ---------- GENERATE ---------- */
 
 function generate() {
-  currentNumber = Math.floor(Math.random() * 10000);
+
+  currentNumber = generateNumber();
 
   correctRomaji = convertNumber(currentNumber);
   correctHiragana = romajiToHiragana(correctRomaji);
 
   const q = document.getElementById("question");
   const input = document.getElementById("inputArea");
+
   document.getElementById("feedback").innerText = "";
 
   if (currentMode === 1) {
@@ -165,8 +217,9 @@ function generate() {
     q.innerText = `Select hiragana: ${currentNumber}`;
 
     let options = [correctHiragana];
+
     while (options.length < 3) {
-      let fake = romajiToHiragana(convertNumber(Math.floor(Math.random()*10000)));
+      let fake = romajiToHiragana(convertNumber(generateNumber()));
       if (!options.includes(fake)) options.push(fake);
     }
 
@@ -183,7 +236,7 @@ function generate() {
   }
 
   if (currentMode === 4) {
-    q.innerText = `Say this number in Japanese: ${currentNumber}`;
+    q.innerText = `Say in Japanese: ${currentNumber}`;
     input.innerHTML = `<button onclick="startSpeech()">🎤 Speak</button>`;
   }
 }
@@ -191,8 +244,9 @@ function generate() {
 /* ---------- CHECK ---------- */
 
 function checkText() {
-  const user = document.getElementById("answer").value.trim();
-  const isCorrect = user === correctRomaji;
+  let user = document.getElementById("answer").value.trim();
+
+  let isCorrect = user === correctRomaji;
 
   updateScore(isCorrect);
 
@@ -201,7 +255,8 @@ function checkText() {
 }
 
 function checkMCQ(choice) {
-  const isCorrect = choice === correctHiragana;
+
+  let isCorrect = choice === correctHiragana;
 
   updateScore(isCorrect);
 
@@ -218,9 +273,10 @@ function startSpeech() {
   recognition.start();
 
   recognition.onresult = function(event) {
-    const spoken = event.results[0][0].transcript;
+    let spoken = event.results[0][0].transcript;
 
-    const isCorrect = spoken.replace(/\s/g, "") === correctRomaji.replace(/\s/g, "");
+    let isCorrect =
+      spoken.replace(/\s/g, "") === correctRomaji.replace(/\s/g, "");
 
     updateScore(isCorrect);
 
@@ -231,13 +287,14 @@ function startSpeech() {
   };
 }
 
-/* ---------- AUDIO OUTPUT ---------- */
+/* ---------- AUDIO ---------- */
 
 function playAudio() {
-  const utterance = new SpeechSynthesisUtterance(correctHiragana);
+  let utterance = new SpeechSynthesisUtterance(correctHiragana);
   utterance.lang = "ja-JP";
   speechSynthesis.speak(utterance);
 }
+
 </script>
 
 </body>
