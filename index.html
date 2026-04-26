@@ -4,13 +4,41 @@
   <title>My Japanese Practice App hihihi</title>
 
   <style>
-    body {
+    body { 
+      <div class="decor top-left">
+  🌸 🌸 🌸 🌸 🌸
+</div>
+
+<div class="decor bottom-right">
+  🗻
+</div>
       font-family: Arial;
       text-align: center;
       padding: 20px;
       background: #f7c6d9;
     }
+.decor {
+  position: fixed;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+}
 
+/* cherry blossoms */
+.top-left {
+  top: 10px;
+  left: 10px;
+  font-size: 28px;
+  transform: rotate(-10deg);
+  max-width: 120px;
+}
+
+/* mt fuji */
+.bottom-right {
+  bottom: 10px;
+  right: 10px;
+  font-size: 90px;
+}
     h1 { color: #2f6f62; }
 
     button {
@@ -24,6 +52,10 @@
     }
 
     .card {
+      .card, #home, #exercise {
+  position: relative;
+  z-index: 2;
+}
       background: white;
       padding: 20px;
       margin: 15px auto;
