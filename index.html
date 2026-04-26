@@ -4,42 +4,46 @@
   <title>My Japanese Practice App hihihi</title>
 
   <style>
-    body { 
-      <div class="decor top-left">
-  🌸 🌸 🌸 🌸 🌸
-</div>
-
-<div class="decor bottom-right">
-  🗻
-</div>
+    body {
       font-family: Arial;
       text-align: center;
       padding: 20px;
       background: #f7c6d9;
     }
-.decor {
-  position: fixed;
-  opacity: 0.25;
-  pointer-events: none;
-  z-index: 0;
-}
 
-/* cherry blossoms */
-.top-left {
-  top: 10px;
-  left: 10px;
-  font-size: 28px;
-  transform: rotate(-10deg);
-  max-width: 120px;
-}
-
-/* mt fuji */
-.bottom-right {
-  bottom: 10px;
-  right: 10px;
-  font-size: 90px;
-}
     h1 { color: #2f6f62; }
+
+    /* 🌸 Decorations */
+    .decor {
+      position: fixed;
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .top-left {
+      top: 10px;
+      left: 10px;
+      font-size: 28px;
+      transform: rotate(-10deg);
+    }
+
+    .bottom-right {
+      bottom: 10px;
+      right: 10px;
+      font-size: 90px;
+    }
+
+    /* 🧱 App layout */
+    .card {
+      position: relative;
+      z-index: 2;
+      background: white;
+      padding: 20px;
+      margin: 15px auto;
+      border-radius: 12px;
+      max-width: 500px;
+    }
 
     button {
       padding: 10px 15px;
@@ -49,18 +53,6 @@
       background: #2f6f62;
       color: white;
       cursor: pointer;
-    }
-
-    .card {
-      .card, #home, #exercise {
-  position: relative;
-  z-index: 2;
-}
-      background: white;
-      padding: 20px;
-      margin: 15px auto;
-      border-radius: 12px;
-      max-width: 500px;
     }
 
     input {
@@ -85,6 +77,15 @@
 
 <body>
 
+<!-- 🌸 Background decorations -->
+<div class="decor top-left">
+  🌸 🌸 🌸 🌸 🌸
+</div>
+
+<div class="decor bottom-right">
+  🗻
+</div>
+
 <h1>My Japanese Practice App hihihi 🇯🇵</h1>
 
 <div id="score">Score: 0/0 (0%)</div>
@@ -94,6 +95,7 @@
 
   <div class="card">
     <h3>Difficulty</h3>
+
     <button onclick="setDifficulty('easy')">Easy (0–20)</button>
     <button onclick="setDifficulty('medium')">Medium (0–100)</button>
     <button onclick="setDifficulty('hard')">Hard (0–999)</button>
@@ -134,17 +136,18 @@ let currentNumber = 0;
 let correctRomaji = "";
 let correctHiragana = "";
 
-// tracking
+/* ---------- TRACKING ---------- */
+
 let total = Number(localStorage.getItem("total")) || 0;
 let correct = Number(localStorage.getItem("correct")) || 0;
 
-// difficulty
-let difficulty = "easy";
-
 /* ---------- DIFFICULTY ---------- */
+
+let difficulty = "easy";
 
 function setDifficulty(level) {
   difficulty = level;
+
   document.getElementById("difficultyLabel").innerText =
     "Current: " + level.charAt(0).toUpperCase() + level.slice(1);
 }
@@ -163,6 +166,7 @@ function updateScore(isCorrect) {
 
 function renderScore() {
   let percent = total === 0 ? 0 : Math.round((correct / total) * 100);
+
   document.getElementById("score").innerText =
     `Score: ${correct}/${total} (${percent}%)`;
 }
@@ -211,19 +215,12 @@ function goHome() {
   document.getElementById("home").classList.remove("hidden");
 }
 
-/* ---------- GENERATE NUMBER ---------- */
+/* ---------- NUMBER GENERATION ---------- */
 
 function generateNumber() {
-
-  if (difficulty === "easy") {
-    return Math.floor(Math.random() * 21); // 0–20
-  }
-
-  if (difficulty === "medium") {
-    return Math.floor(Math.random() * 101); // 0–100
-  }
-
-  return Math.floor(Math.random() * 1000); // hard 0–999
+  if (difficulty === "easy") return Math.floor(Math.random() * 21);
+  if (difficulty === "medium") return Math.floor(Math.random() * 101);
+  return Math.floor(Math.random() * 1000);
 }
 
 /* ---------- GENERATE ---------- */
@@ -277,7 +274,6 @@ function generate() {
 
 function checkText() {
   let user = document.getElementById("answer").value.trim();
-
   let isCorrect = user === correctRomaji;
 
   updateScore(isCorrect);
@@ -287,7 +283,6 @@ function checkText() {
 }
 
 function checkMCQ(choice) {
-
   let isCorrect = choice === correctHiragana;
 
   updateScore(isCorrect);
