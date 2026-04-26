@@ -96,7 +96,9 @@
       height: 100%;
       background: white;
       z-index: 999;
-      display: flex;
+
+      display: none; /* FIXED */
+
       justify-content: center;
       align-items: center;
       text-align: center;
@@ -106,7 +108,7 @@
       font-family: Arial;
     }
 
-    /* 🐭 Pikachu image animation */
+    /* 🐭 Pikachu image */
     .pikachu-img {
       width: 220px;
       height: auto;
@@ -174,13 +176,12 @@
 </div>
 
 <!-- CONTACT SCREEN -->
-<div id="contactScreen" class="hidden">
+<div id="contactScreen">
   <div class="contactContent">
 
-    <!-- 🐭 REAL IMAGE -->
+    <!-- 🐭 IMAGE ONLY -->
     <img src="pikachu.png" class="pikachu-img" />
 
-    <h2>pikachu is laughing</h2>
     <p>volte quando quiser estudar 🇯🇵</p>
 
     <button onclick="closeContact()">Voltar</button>
@@ -204,11 +205,11 @@ let difficulty = "easy";
 /* ---------- CONTACT ---------- */
 
 function openContact() {
-  document.getElementById("contactScreen").classList.remove("hidden");
+  document.getElementById("contactScreen").style.display = "flex";
 }
 
 function closeContact() {
-  document.getElementById("contactScreen").classList.add("hidden");
+  document.getElementById("contactScreen").style.display = "none";
 }
 
 /* ---------- DIFFICULTY ---------- */
