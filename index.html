@@ -201,9 +201,6 @@ function closeContact() {
 function setDifficulty(level, btn) {
   difficulty = level;
 
-  document.getElementById("difficultyLabel").innerText =
-    "Current: " + level.charAt(0).toUpperCase() + level.slice(1);
-
   const buttons = document.querySelectorAll("#home .card button");
   buttons.forEach(b => b.classList.remove("active"));
 
