@@ -45,15 +45,9 @@
       max-width: 500px;
     }
 
-    button {
-      padding: 10px 15px;
-      margin: 6px;
-      border: none;
-      border-radius: 10px;
-      background: #2f6f62;
-      color: white;
-      cursor: pointer;
-    }
+    button.active {
+  background: #5fa89c; /* lighter green */
+}
 
     input {
       padding: 8px;
@@ -215,11 +209,11 @@ function closeContact() {
 
 /* ---------- DIFFICULTY ---------- */
 
-function setDifficulty(level) {
-  difficulty = level;
+const buttons = document.querySelectorAll("#home .card button");
 
-  document.getElementById("difficultyLabel").innerText =
-    "Current: " + level.charAt(0).toUpperCase() + level.slice(1);
+  buttons.forEach(btn => btn.classList.remove("active"));
+
+  event.target.classList.add("active");
 }
 
 /* ---------- SCORE ---------- */
@@ -340,9 +334,57 @@ function generate() {
 
 /* ---------- CHECK ---------- */
 
+function normalize(text) {
+  return text.toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+function getVariants(text) {
+
+  let variants = [text];
+
+  const altMap = {
+    "rei": ["zero", "maru"],
+    "zero": ["rei", "maru"],
+    "maru": ["rei", "zero"],
+    "yon": ["shi"],
+    "shi": ["yon"],
+    "nana": ["shichi"],
+    "shichi": ["nana"],
+    "kyuu": ["ku"],
+    "ku": ["kyuu"]
+  };
+
+  let words = text.split(" ");
+
+  let results = [[]];
+
+  words.forEach(word => {
+    let options = [word];
+
+    if (altMap[word]) {
+      options = options.concat(altMap[word]);
+    }
+
+    let newResults = [];
+
+    results.forEach(prefix => {
+      options.forEach(opt => {
+        newResults.push([...prefix, opt]);
+      });
+    });
+
+    results = newResults;
+  });
+
+  return results.map(arr => arr.join(" "));
+}
+
 function checkText() {
-  let user = document.getElementById("answer").value.trim();
-  let isCorrect = user === correctRomaji;
+  let user = normalize(document.getElementById("answer").value);
+
+  let correctVariants = getVariants(correctRomaji).map(normalize);
+
+  let isCorrect = correctVariants.includes(user);
 
   updateScore(isCorrect);
 
@@ -370,8 +412,10 @@ function startSpeech() {
   recognition.onresult = function(event) {
     let spoken = event.results[0][0].transcript;
 
-    let isCorrect =
-      spoken.replace(/\s/g, "") === correctRomaji.replace(/\s/g, "");
+    let spokenNormalized = normalize(spoken);
+let correctVariants = getVariants(correctRomaji).map(normalize);
+
+let isCorrect = correctVariants.includes(spokenNormalized);
 
     updateScore(isCorrect);
 
