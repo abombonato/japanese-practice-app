@@ -13,7 +13,7 @@
 
     h1 { color: #2f6f62; }
 
-    /* 🌸 Background decorations */
+    /* 🌸 Decorations */
     .decor {
       position: fixed;
       opacity: 0.25;
@@ -34,7 +34,6 @@
       font-size: 90px;
     }
 
-    /* 🧱 App layout */
     .card {
       position: relative;
       z-index: 2;
@@ -46,26 +45,24 @@
     }
 
     button {
-  padding: 10px 15px;
-  margin: 6px;
-  border: none;
-  border-radius: 10px;
-  background: #2f6f62;
-  color: white;
-  cursor: pointer;
-}
-    
+      padding: 10px 15px;
+      margin: 6px;
+      border: none;
+      border-radius: 10px;
+      background: #2f6f62;
+      color: white;
+      cursor: pointer;
+    }
+
     button.active {
-  background: #5fa89c; /* lighter green */
-}
+      background: #5fa89c;
+    }
 
     input {
       padding: 8px;
       width: 80%;
       margin-top: 8px;
     }
-
-    .hidden { display: none; }
 
     #score {
       font-weight: bold;
@@ -100,22 +97,14 @@
       height: 100%;
       background: white;
       z-index: 999;
-
-      display: none; /* FIXED */
-
+      display: none;
       justify-content: center;
       align-items: center;
       text-align: center;
     }
 
-    .contactContent {
-      font-family: Arial;
-    }
-
-    /* 🐭 Pikachu image */
     .pikachu-img {
       width: 220px;
-      height: auto;
       animation: shake 0.5s infinite alternate;
     }
 
@@ -128,7 +117,6 @@
 
 <body>
 
-<!-- 🌸 Background -->
 <div class="decor top-left">🌸 🌸 🌸 🌸 🌸</div>
 <div class="decor bottom-right">🗻</div>
 
@@ -142,9 +130,9 @@
   <div class="card">
     <h3>Difficulty</h3>
 
-    <button onclick="setDifficulty('easy')">Easy (0–20)</button>
-    <button onclick="setDifficulty('medium')">Medium (0–100)</button>
-    <button onclick="setDifficulty('hard')">Hard (0–999)</button>
+    <button class="active" onclick="setDifficulty('easy', this)">Easy (0–20)</button>
+    <button onclick="setDifficulty('medium', this)">Medium (0–100)</button>
+    <button onclick="setDifficulty('hard', this)">Hard (0–999)</button>
 
     <p id="difficultyLabel">Current: Easy</p>
   </div>
@@ -157,7 +145,7 @@
 </div>
 
 <!-- EXERCISE -->
-<div id="exercise" class="hidden">
+<div id="exercise" style="display:none;">
   <div class="card">
 
     <h2 id="question"></h2>
@@ -168,29 +156,21 @@
 
     <p id="feedback"></p>
 
-    <button onclick="goHome()">Back</button>
     <button onclick="generate()">Next</button>
-   
+    <button onclick="goHome()">Back</button>
 
   </div>
 </div>
 
 <!-- CONTACT BUTTON -->
-<div id="contactBtn" onclick="openContact()">
-  entre em contato
-</div>
+<div id="contactBtn" onclick="openContact()">entre em contato</div>
 
 <!-- CONTACT SCREEN -->
 <div id="contactScreen">
-  <div class="contactContent">
-
-    <!-- 🐭 IMAGE ONLY -->
-    <img src="pikachu.png" class="pikachu-img" />
-
+  <div>
+    <img src="pikachu.png" class="pikachu-img">
     <p>volte quando quiser estudar 🇯🇵</p>
-
     <button onclick="closeContact()">Voltar</button>
-
   </div>
 </div>
 
@@ -219,11 +199,16 @@ function closeContact() {
 
 /* ---------- DIFFICULTY ---------- */
 
-const buttons = document.querySelectorAll("#home .card button");
+function setDifficulty(level, btn) {
+  difficulty = level;
 
-  buttons.forEach(btn => btn.classList.remove("active"));
+  document.getElementById("difficultyLabel").innerText =
+    "Current: " + level.charAt(0).toUpperCase() + level.slice(1);
 
-  event.target.classList.add("active");
+  const buttons = document.querySelectorAll("#home .card button");
+  buttons.forEach(b => b.classList.remove("active"));
+
+  btn.classList.add("active");
 }
 
 /* ---------- SCORE ---------- */
@@ -240,12 +225,54 @@ function updateScore(isCorrect) {
 
 function renderScore() {
   let percent = total === 0 ? 0 : Math.round((correct / total) * 100);
-
   document.getElementById("score").innerText =
     `Score: ${correct}/${total} (${percent}%)`;
 }
 
 renderScore();
+
+/* ---------- NORMALIZATION ---------- */
+
+function normalize(text) {
+  return text.toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+/* ---------- VARIANTS ---------- */
+
+function getVariants(text) {
+
+  const altMap = {
+    "rei": ["zero", "maru"],
+    "zero": ["rei", "maru"],
+    "maru": ["rei", "zero"],
+    "yon": ["shi"],
+    "shi": ["yon"],
+    "nana": ["shichi"],
+    "shichi": ["nana"],
+    "kyuu": ["ku"],
+    "ku": ["kyuu"]
+  };
+
+  let words = text.split(" ");
+  let results = [[]];
+
+  words.forEach(word => {
+    let options = [word];
+    if (altMap[word]) options = options.concat(altMap[word]);
+
+    let newResults = [];
+
+    results.forEach(prefix => {
+      options.forEach(opt => {
+        newResults.push([...prefix, opt]);
+      });
+    });
+
+    results = newResults;
+  });
+
+  return results.map(arr => arr.join(" "));
+}
 
 /* ---------- NUMBER SYSTEM ---------- */
 
@@ -279,14 +306,14 @@ function romajiToHiragana(text) {
 
 function startExercise(mode) {
   currentMode = mode;
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("exercise").classList.remove("hidden");
+  document.getElementById("home").style.display = "none";
+  document.getElementById("exercise").style.display = "block";
   generate();
 }
 
 function goHome() {
-  document.getElementById("exercise").classList.add("hidden");
-  document.getElementById("home").classList.remove("hidden");
+  document.getElementById("exercise").style.display = "none";
+  document.getElementById("home").style.display = "block";
 }
 
 /* ---------- GENERATE ---------- */
@@ -344,57 +371,11 @@ function generate() {
 
 /* ---------- CHECK ---------- */
 
-function normalize(text) {
-  return text.toLowerCase().trim().replace(/\s+/g, " ");
-}
-
-function getVariants(text) {
-
-  let variants = [text];
-
-  const altMap = {
-    "rei": ["zero", "maru"],
-    "zero": ["rei", "maru"],
-    "maru": ["rei", "zero"],
-    "yon": ["shi"],
-    "shi": ["yon"],
-    "nana": ["shichi"],
-    "shichi": ["nana"],
-    "kyuu": ["ku"],
-    "ku": ["kyuu"]
-  };
-
-  let words = text.split(" ");
-
-  let results = [[]];
-
-  words.forEach(word => {
-    let options = [word];
-
-    if (altMap[word]) {
-      options = options.concat(altMap[word]);
-    }
-
-    let newResults = [];
-
-    results.forEach(prefix => {
-      options.forEach(opt => {
-        newResults.push([...prefix, opt]);
-      });
-    });
-
-    results = newResults;
-  });
-
-  return results.map(arr => arr.join(" "));
-}
-
 function checkText() {
   let user = normalize(document.getElementById("answer").value);
+  let variants = getVariants(correctRomaji).map(normalize);
 
-  let correctVariants = getVariants(correctRomaji).map(normalize);
-
-  let isCorrect = correctVariants.includes(user);
+  let isCorrect = variants.includes(user);
 
   updateScore(isCorrect);
 
@@ -420,12 +401,10 @@ function startSpeech() {
   recognition.start();
 
   recognition.onresult = function(event) {
-    let spoken = event.results[0][0].transcript;
+    let spoken = normalize(event.results[0][0].transcript);
+    let variants = getVariants(correctRomaji).map(normalize);
 
-    let spokenNormalized = normalize(spoken);
-let correctVariants = getVariants(correctRomaji).map(normalize);
-
-let isCorrect = correctVariants.includes(spokenNormalized);
+    let isCorrect = variants.includes(spoken);
 
     updateScore(isCorrect);
 
