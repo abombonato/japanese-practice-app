@@ -130,9 +130,9 @@
   <div class="card">
     <h3>Difficulty</h3>
 
-    <button class="active" onclick="setDifficulty('easy', this)">Easy (0–20)</button>
-    <button onclick="setDifficulty('medium', this)">Medium (0–100)</button>
-    <button onclick="setDifficulty('hard', this)">Hard (0–999)</button>
+  <button class="difficulty-btn active" onclick="setDifficulty('easy', this)">Easy (0–20)</button>
+<button class="difficulty-btn" onclick="setDifficulty('medium', this)">Medium (0–100)</button>
+<button class="difficulty-btn" onclick="setDifficulty('hard', this)">Hard (0–999)</button>
     
   </div>
 
@@ -201,7 +201,8 @@ function closeContact() {
 function setDifficulty(level, btn) {
   difficulty = level;
 
-  const buttons = document.querySelectorAll("#home .card button");
+  const buttons = document.querySelectorAll(".difficulty-btn");
+
   buttons.forEach(b => b.classList.remove("active"));
 
   btn.classList.add("active");
